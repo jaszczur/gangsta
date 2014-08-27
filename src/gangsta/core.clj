@@ -18,13 +18,19 @@
 (defn is-alive [mafia i]
   (contains? (:alive-set mafia) i))
 
+(defn mod-gangsta [mafia i]
+  (mod i (:num mafia)))
+
 (defn next-gangsta [mafia i]
+  (mod-gangsta mafia (inc i)))
+
+(defn next-alive-gangsta [mafia i]
   (if (all-dead? mafia)
     nil
-    (let [imod (mod (inc i) (:num mafia))]
-      (if (is-alive mafia imod)
-        imod
-        (recur mafia imod)))))
+    (let [ng (next-gangsta mafia i)]
+      (if (is-alive mafia ng)
+        ng
+        (recur mafia ng)))))
 
 (defn kill-motherfucker [mafia i]
   (update-in mafia [:alive-set] disj i))
@@ -37,8 +43,8 @@
          i 0]
     (if (only-one-alive curr-mafia)
       (inc (lone-survivor curr-mafia))
-      (let [to-be-shoot (next-gangsta curr-mafia i)
-            next-shooter (next-gangsta curr-mafia to-be-shoot)]
+      (let [to-be-shoot (next-alive-gangsta curr-mafia i)
+            next-shooter (next-alive-gangsta curr-mafia to-be-shoot)]
         (recur (kill-motherfucker curr-mafia to-be-shoot) next-shooter)))))
 
 (defn -main [] (prn (lets-play-a-game)))
